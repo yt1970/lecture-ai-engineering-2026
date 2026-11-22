@@ -137,6 +137,41 @@ def search(query: str) -> list[dict]:
         """, (sqlite_vec.serialize_float32(vector), RAG_TOP_K))
         return [dict(row) for row in rows]
 
+## 前後ページを追加する関数(第５回宿題)
+def search_with_neighbors(query: str) -> list[dict]:
+    hits = search(query)
+
+    pages_by_document = defaultdict(list)
+    for page in load_pages():
+        pages_by_document[page["document_id"]].append(page)
+
+    positions = {}
+    for document_pages in pages_by_document.values():
+        document_pages.sort(key=lambda page: page["page"])
+        for index, page in enumerate(document_pages):
+            positions[page["page_id"]] = (document_pages, index)
+
+    # 検索ヒットを先に登録。隣接ページとしても見つかった場合はヒット扱いを保つ。
+    results = {
+        hit["page_id"]: {**hit, "retrieval": "hit"}
+        for hit in hits
+    }
+
+    for hit in hits:
+        if hit["page_id"] not in positions:
+            raise ValueError(f"検索結果のページが教材データにありません: {hit['page_id']}")
+
+        document_pages, index = positions[hit["page_id"]]
+        for neighbor_index in (index - 1, index + 1):
+            if 0 <= neighbor_index < len(document_pages):
+                page = document_pages[neighbor_index]
+                results.setdefault(
+                    page["page_id"],
+                    {**page, "retrieval": "adjacent"},
+                )
+
+    return list(results.values())
+
 
 def search_graph(query: str) -> dict:
     """ベクトル検索を入口に、前後ページと共通用語で候補を広げる。"""
