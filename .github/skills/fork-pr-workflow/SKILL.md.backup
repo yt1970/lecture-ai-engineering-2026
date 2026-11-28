@@ -1,0 +1,61 @@
+---
+name: fork-pr-workflow
+description: "Use when preparing changes in a GitHub fork for staging, committing, syncing with the upstream repository, pushing a branch, or opening a pull request. Includes an untracked file-copy backup before risky upstream changes."
+argument-hint: "Describe the branch, files, and upstream change or PR you want to prepare"
+---
+
+# Fork change and pull request workflow
+
+Use this workflow for changes made in a fork when upstream updates may conflict with local work. Explain the current step and its result in plain language. Do not silently discard, overwrite, stage, commit, push, or open a PR.
+
+## 1. Inspect before acting
+
+1. Check the current branch, worktree status, recent commits, and configured remotes.
+2. Identify which remote is the user's fork (`origin`) and which is the source repository (`upstream`). Do not assume remote names or URLs; ask if the relationship is unclear.
+3. List tracked modifications, staged changes, and untracked files separately. Do not include unrelated user changes in this task.
+4. Confirm the intended PR base branch and the exact files or changes the user wants included.
+
+## 2. Back up work before upstream operations
+
+Before merging, rebasing, switching branches that could disturb work, or resolving conflicts:
+
+1. Agree with the user on the exact in-scope files to protect. Include staged and unstaged edits. Include untracked source files only when the user confirms they are part of the work.
+2. Make a byte-for-byte copy next to each protected file with a changed extension, for example `app/agent.py` to `app/agent.py.backup`. Never overwrite an existing backup; choose a fresh suffix or ask what to do.
+3. Do not copy secrets, credentials, caches, virtual environments, generated databases, or unrelated files. Ask before copying files whose contents or purpose are unclear.
+4. Verify each backup exists and compare it with its source. Check `git status --short` and `git check-ignore` to confirm the copies are not tracked or ignored unexpectedly. Never stage backup copies.
+5. Keep backups until the user confirms the upstream operation and resulting work are correct. Do not delete them without explicit permission.
+
+## 3. Sync upstream safely
+
+1. Fetch the confirmed upstream remote and inspect the incoming commits before integrating them.
+2. Explain whether the operation is a fast-forward, merge, or rebase and whether local work may conflict. Prefer a merge for a beginner-friendly, recoverable workflow unless the user requests otherwise or repository policy says otherwise.
+3. If conflicts occur, stop and explain the options. Do not select one side or abort a merge without the user's direction.
+4. After integration, inspect the diff and status. Verify the protected files still contain the intended work and that backups remain available.
+
+## 4. Stage and commit only the requested changes
+
+1. Show the user the candidate file list and a concise diff summary.
+2. Stage explicit paths only. Never use `git add .` or `git add -A` as a shortcut.
+3. Verify the staged diff and check whitespace before committing. Keep unrelated and backup files unstaged.
+4. Ask for confirmation of the commit message and staged contents before creating the commit.
+5. Include the repository-required co-author trailer unless the user explicitly asks not to:
+
+   `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>`
+
+6. If the editor fails, use a non-interactive commit message only after confirming the intended message.
+
+## 5. Push and open a pull request
+
+1. Confirm the current feature branch, fork remote, target repository, and base branch.
+2. Show the outgoing commits and confirm with the user before pushing.
+3. Push only the feature branch to the user's fork; do not force-push unless explicitly requested and the consequences have been explained.
+4. Use `gh` to inspect repository and PR state. Draft a concise title and description summarizing changes, tests, and known limitations.
+5. Show the PR target (`base`) and source (`head`) and ask before creating the PR. Do not create a PR against the fork itself when the user intends to target the upstream repository.
+6. After creation, report the PR link, branch, commit, and validation results. Keep backups until the user confirms they are no longer needed.
+
+## General safeguards
+
+- Preserve unrelated dirty files and existing backups; never clean or reset the worktree as part of this workflow.
+- Do not infer that every changed file belongs in the PR. Confirm scope.
+- If an operation fails or reports unexpected changes, stop, preserve evidence, and explain the state before trying another operation.
+- Prefer small, reversible steps and verify the repository state after each state-changing step.

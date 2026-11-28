@@ -4,11 +4,11 @@
 
 <!-- [tool call] の行は、表示された行をそのまま貼り付けてください。終わらなかった STEP は、空欄のままでかまいません。 -->
 
-- STEP 1 のツールの名前：
-- STEP 2 の [tool call]：
-- STEP 3 の [tool call]：
-- STEP 4 の [tool call]：
-- 気づき・疑問：
+- STEP 1 のツールの名前：glossary_search_glossary
+- STEP 2 の [tool call]：glossary_search_glossary({'query': '3レベル'})
+- STEP 3 の [tool call]：fetch_fetch({'url': 'https://modelcontextprotocol.io/'})
+- STEP 4 の [tool call]：aws_aws___search_documentation({'topics': ['general'], 'search_phrase': 'Amazon S3 バージョニング 概要'})
+- 気づき・疑問：エージェントに渡す質問にはどのtoolやMCPを呼ぶように指定していないにも関わらず、きちんとモデルがMCPを特定してMCPを呼び出している部分が不思議に思えました。MCP_agent.pyを見てみると、MCP_config.jsonからリストを作ってモデルに渡している処理やプロンプトは確認できたが、それだけで確実にMCPを呼び出すためには能力の高いモデルを使うことやモデルの学習が必要なのではないかと感じました。
 
 ## 宿題
 
